@@ -47,6 +47,8 @@
 	NSLayoutConstraint *indicatorLeftConst;
 	NSLayoutConstraint *indicatorWidthConst;
 	NSLayoutConstraint *indicatorHeightConst;
+	
+	UIImageView *shadowImageView;
 }
 
 @end
@@ -99,6 +101,7 @@
 	// add page controller as child
 	[self addChildViewController:pageController];
 	[self.view addSubview:pageController.view];
+	[self.view sendSubviewToBack:pageController.view];
 	[pageController didMoveToParentViewController:self];
 	
 	// add self as child to parent
@@ -336,14 +339,13 @@
 
 // add shadow
 - (void)addShadow {
-	float shadowHeight = 1.f/[[UIScreen mainScreen] scale];
-	UIView *shadow = [[UIView alloc] initWithFrame:CGRectMake(0, 44 - shadowHeight, self.view.frame.size.width, shadowHeight)];
-	[shadow setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleWidth];
-	[shadow setBackgroundColor:[UIColor colorWithWhite:0.7 alpha:1]];
-	[shadow.layer setShadowOpacity:.1f];
-	[shadow.layer setShadowRadius:.3f];
-	[shadow.layer setShadowOffset:CGSizeMake(0, .2)];
-	[self.view addSubview:shadow];
+	if (shadowImageView && shadowImageView.superview){
+		[shadowImageView removeFromSuperview];
+	}
+	shadowImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 44, self.view.frame.size.width, 10)];
+	shadowImageView.image = [UIImage imageNamed:@"shadow"];
+	shadowImageView.alpha = 0.5;
+	[self.view addSubview:shadowImageView];
 }
 
 // set extraSpace
