@@ -124,7 +124,7 @@
 	// create segment control
 	segmentController = [[UISegmentedControl alloc] initWithItems:elements];
 	CGRect segRect = segmentController.frame;
-	segRect.size.height = 44;
+	segRect.size.height = [self tabHeight].intValue;
 	segmentController.frame = segRect;
 	
 	UIColor *normalTextColor = [self.view.tintColor colorWithAlphaComponent:0.8];
@@ -210,7 +210,7 @@
 	[segmentController setDividerImage:[UIImage new] forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
 	
 	[tabScrollView addSubview:segmentController];
-	[tabScrollView setContentSize:CGSizeMake(segmentedWidth, 44)];
+	[tabScrollView setContentSize:CGSizeMake(segmentedWidth, [self tabHeight].intValue)];
 	[tabScrollView setShowsHorizontalScrollIndicator:NO];
 	[tabScrollView setShowsVerticalScrollIndicator:NO];
 	[tabScrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -342,7 +342,7 @@
 	if (shadowImageView && shadowImageView.superview){
 		[shadowImageView removeFromSuperview];
 	}
-	shadowImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 44, self.view.frame.size.width, 10)];
+	shadowImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, [self tabHeight].intValue, self.view.frame.size.width, 10)];
 	shadowImageView.image = [UIImage imageNamed:@"shadow"];
 	shadowImageView.alpha = 0.5;
 	[self.view addSubview:shadowImageView];
@@ -737,7 +737,7 @@
 
 -(NSNumber*)tabHeight
 {
-	return @44;
+	return @44 ;
 }
 
 @end
