@@ -49,6 +49,7 @@
 	NSLayoutConstraint *indicatorHeightConst;
 	
 	UIImageView *shadowImageView;
+	
 }
 
 @end
@@ -193,6 +194,9 @@
 	
 	CGRect segmentRect = segmentController.frame;
 	segmentRect.size.width = segmentedWidth;
+	if ([self centered]){
+		segmentRect.origin.x = self.view.frame.size.width / 2 - maxTabWidth / 2;
+	}
 	segmentController.frame = segmentRect;
 	
 	// create scrollview
@@ -210,7 +214,11 @@
 	[segmentController setDividerImage:[UIImage new] forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
 	
 	[tabScrollView addSubview:segmentController];
-	[tabScrollView setContentSize:CGSizeMake(segmentedWidth, [self tabHeight].intValue)];
+	if ([self centered]){
+		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + maxTabWidth / 2), [self tabHeight].intValue)];
+	}else{
+		[tabScrollView setContentSize:CGSizeMake(segmentedWidth, [self tabHeight].intValue)];
+	}
 	[tabScrollView setShowsHorizontalScrollIndicator:NO];
 	[tabScrollView setShowsVerticalScrollIndicator:NO];
 	[tabScrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -428,6 +436,7 @@
 								[strongSelf callDelegate];
 							}];
 	
+//	tabScrollView.contentSize = contentSize;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -465,9 +474,12 @@
 }
 
 - (void)fixOffset {
+	if ([self centered]) {
+		return;
+	}
 	CGRect selectedTabRect = ((UIView*)tabs[selectedIndex]).frame;
 	CGFloat indicatorMaxOriginX = tabScrollView.frame.size.width / 2 - selectedTabRect.size.width / 2;
-	
+
 	CGFloat offsetX = selectedTabRect.origin.x-indicatorMaxOriginX;
 	
 	if (offsetX < 0) offsetX = 0;
@@ -494,12 +506,23 @@
 	for (UIView *tabView in tabs) {
 		
 		for (UIView *label in tabView.subviews) {
-			if ([label isKindOfClass:[UILabel class]]) {
-				CGFloat tabWidth = roundf([label sizeThatFits:CGSizeMake(FLT_MAX, 0)].width + extraSpace * 2);
+			if ([label isKindOfClass:[UIImageView class]] && [elements[i] isKindOfClass:[UIImage class]] && elements[i] == ((UIImageView*)label).image ) {
+				UIImage* image = elements[i];
+				CGFloat tabWidth = image.size.width;
 				[segmentController setWidth:tabWidth forSegmentAtIndex:i];
 				
 				segmentedWidth += tabWidth;
 				
+				// get max tab width
+				maxTabWidth = tabWidth > maxTabWidth ? tabWidth : maxTabWidth;
+			}else if ([label isKindOfClass:[UILabel class]]) {
+				CGFloat tabWidth = roundf([label sizeThatFits:CGSizeMake(FLT_MAX, 0)].width + extraSpace * 2);
+				[segmentController setWidth:tabWidth forSegmentAtIndex:i];
+				
+				segmentedWidth += tabWidth;
+				if ([self centered] && i > 0 && i < [tabs count] -1 ){
+					segmentedWidth += extraSpace;
+				}
 				// get max tab width
 				maxTabWidth = tabWidth > maxTabWidth ? tabWidth : maxTabWidth;
 			}
@@ -519,7 +542,7 @@
 			
 			segmentedWidth = maxTabWidth * numberOfTabs;
 		} else {
-			maxTabWidth = roundf(size.width/(float)numberOfTabs);
+			maxTabWidth = roundf(size.width/(float)numberOfTabs + extraSpace * 2);
 			
 			for (int i = 0; i < numberOfTabs; i++) {
 				[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
@@ -533,7 +556,12 @@
 	segmentRect.size.width = segmentedWidth;
 	segmentController.frame = segmentRect;
 	
-	[tabScrollView setContentSize:CGSizeMake(segmentedWidth, 44)];
+	if ([self centered]){
+		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + maxTabWidth / 2), [self tabHeight].intValue)];
+	}else{
+		[tabScrollView setContentSize:CGSizeMake(segmentedWidth, [self tabHeight].intValue)];
+	}
+//	[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + maxTabWidth / 2), [self tabHeight].doubleValue)];
 }
 
 - (UIImage *)imageWithInsets:(CGRect)insetRect image:(UIImage *)image {
@@ -563,7 +591,6 @@
 {
 	if (selectedIndex != currentTabIndex && currentTabIndex < numberOfTabs) {
 		segmentController.selectedSegmentIndex = currentTabIndex;
-		
 		[self segmentAction:segmentController];
 		
 		[self.view layoutIfNeeded];
@@ -655,7 +682,6 @@
 # pragma mark - ScrollView Delegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-	
 	CGPoint offset = scrollView.contentOffset;
 	
 	CGFloat scrollViewWidth = scrollView.frame.size.width;
@@ -718,13 +744,19 @@
 			
 		}
 	}
-	
-	CGFloat indicatorMaxOriginX = scrollView.frame.size.width / 2 - indicator.frame.size.width / 2;
-	
-	CGFloat offsetX = indicator.frame.origin.x-indicatorMaxOriginX;
-	
-	if (offsetX < 0) offsetX = 0;
-	if (offsetX > segmentController.frame.size.width-scrollViewWidth) offsetX = segmentController.frame.size.width-scrollViewWidth;
+
+	CGFloat offsetX = 0;
+	if ([self centered]){
+		offsetX = indicatorLeftConst.constant;
+		[self resizeTabs];
+	}else{
+		CGFloat indicatorMaxOriginX = scrollView.frame.size.width / 2 - indicator.frame.size.width / 2;
+		offsetX = indicator.frame.origin.x-indicatorMaxOriginX;
+		if (offsetX < 0) offsetX = 0;
+		if (offsetX > segmentController.frame.size.width-scrollViewWidth) {
+			offsetX = segmentController.frame.size.width-scrollViewWidth;
+		}
+	}
 	
 	[UIView animateWithDuration:isNotDragging ? 0.3 : 0.01 animations:^{
 		tabScrollView.contentOffset = CGPointMake(offsetX, 0);
@@ -738,6 +770,11 @@
 -(NSNumber*)tabHeight
 {
 	return @44 ;
+}
+
+-(BOOL)centered
+{
+	return NO;
 }
 
 @end
