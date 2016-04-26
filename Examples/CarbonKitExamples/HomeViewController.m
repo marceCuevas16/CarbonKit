@@ -20,7 +20,9 @@
 	
 	self.title = @"CarbonKit";
 	
-	NSArray *names = @[[UIImage imageNamed:@"statusOrange"], @"TWO", @"THREE", @"FOUR", @"FIVE", @"SIX", @"SEVEN", @"EIGHT", @"NINE", @"TEN"];
+	NSArray *names = @[@"asd", @"TWOasdasdasdasdasda"
+			   //, @"THREE", @"FOURasdasdasdasdas", @"FIVE", @"SIXasd", @"SEVEN", @"EIGHT", @"NINE", @"TEN"
+			   ];
 	UIColor *color = self.navigationController.navigationBar.barTintColor;
 	tabSwipe = [[CarbonTabSwipeNavigation alloc] createWithRootViewController:self tabNames:names tintColor:color delegate:self];
 	[tabSwipe setIndicatorHeight:2.f]; // default 3.f

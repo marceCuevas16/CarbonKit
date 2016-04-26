@@ -82,7 +82,7 @@
 	self.delegate = delegate;
 	numberOfTabs = names.count;
 	rootViewController = viewController;
-	extraSpace = 15;
+	extraSpace = [self extraSpace];
 	
 	// create page controller
 	pageController = [UIPageViewController alloc];
@@ -146,6 +146,7 @@
 	// get tabs width
 	NSUInteger i = 0;
 	CGFloat segmentedWidth = 0;
+	CGFloat firstWitdh = 0;
 	for (UIView *tabView in [segmentController subviews]) {
 		for (UIView *label in tabView.subviews) {
 			if ([label isKindOfClass:[UIImageView class]] && [elements[i] isKindOfClass:[UIImage class]] && elements[i] == ((UIImageView*)label).image ) {
@@ -154,7 +155,9 @@
 				UIImage* image = elements[i];
 				CGFloat tabWidth = image.size.width;
 				[segmentController setWidth:tabWidth forSegmentAtIndex:i];
-				
+				if (i==0){
+					firstWitdh = tabWidth;
+				}
 				segmentedWidth += tabWidth;
 				
 				// get max tab width
@@ -173,31 +176,35 @@
 		i++;
 	}
 	
-	if (segmentedWidth < self.view.frame.size.width) {
-		if (self.view.frame.size.width / (float)numberOfTabs < maxTabWidth) {
-			
-			for (int i = 0; i < numberOfTabs; i++) {
-				[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
+	if (![self centered]){
+		if (segmentedWidth < self.view.frame.size.width) {
+			if (self.view.frame.size.width / (float)numberOfTabs < maxTabWidth) {
+				
+				for (int i = 0; i < numberOfTabs; i++) {
+					[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
+				}
+				
+				segmentedWidth = maxTabWidth * numberOfTabs;
+			} else {
+				maxTabWidth = roundf(self.view.frame.size.width/(float)numberOfTabs);
+				
+				for (int i = 0; i < numberOfTabs; i++) {
+					[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
+				}
+				
+				segmentedWidth = maxTabWidth * numberOfTabs;
 			}
-			
-			segmentedWidth = maxTabWidth * numberOfTabs;
-		} else {
-			maxTabWidth = roundf(self.view.frame.size.width/(float)numberOfTabs);
-			
-			for (int i = 0; i < numberOfTabs; i++) {
-				[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
-			}
-			
-			segmentedWidth = maxTabWidth * numberOfTabs;
 		}
 	}
 	
 	CGRect segmentRect = segmentController.frame;
 	segmentRect.size.width = segmentedWidth;
 	if ([self centered]){
-		segmentRect.origin.x = self.view.frame.size.width / 2 - maxTabWidth / 2;
+		UIView* tabView = tabs[0];
+		segmentRect.origin.x = self.view.frame.size.width / 2 - firstWitdh / 2;
 	}
 	segmentController.frame = segmentRect;
+
 	
 	// create scrollview
 	tabScrollView = [[UIScrollView alloc] init];
@@ -356,11 +363,6 @@
 	[self.view addSubview:shadowImageView];
 }
 
-// set extraSpace
-- (void)setExtraSpace:(CGFloat)extra {
-	extraSpace = extra;
-}
-
 - (void)segmentAction:(UISegmentedControl *)segment {
 	UIView *tab = tabs[segmentController.selectedSegmentIndex];
 	indicatorWidthConst.constant = tab.frame.size.width;
@@ -464,12 +466,19 @@
 	indicatorWidthConst.constant = tab.frame.size.width;
 	indicatorLeftConst.constant = tab.frame.origin.x;
 	
+
 	// keep the page controller's width in sync
 	pageController.view.frame = CGRectMake(pageController.view.frame.origin.x, pageController.view.frame.origin.y, self.view.bounds.size.width, pageController.view.frame.size.height);
 	
 	[self resizeTabs];
 	[self fixOffset];
 	[self.view layoutIfNeeded];
+	CGRect segmentRect = segmentController.frame;
+	if ([self centered]){
+		UIView* tabView = tabs[0];
+		segmentRect.origin.x = self.view.frame.size.width / 2 - tabView.frame.size.width / 2;
+		segmentController.frame = segmentRect;
+	}
 	
 }
 
@@ -503,6 +512,7 @@
 	// get tabs width
 	NSUInteger i = 0;
 	CGFloat segmentedWidth = 0;
+	CGFloat firstWithd = 0;
 	for (UIView *tabView in tabs) {
 		
 		for (UIView *label in tabView.subviews) {
@@ -512,6 +522,10 @@
 				[segmentController setWidth:tabWidth forSegmentAtIndex:i];
 				
 				segmentedWidth += tabWidth;
+				
+				if ( i == 0) {
+					firstWithd = tabWidth;
+				}
 				
 				// get max tab width
 				maxTabWidth = tabWidth > maxTabWidth ? tabWidth : maxTabWidth;
@@ -530,34 +544,44 @@
 		i++;
 	}
 	
-	// segment width not fill the view width
-	if (segmentedWidth < size.width) {
-		
-		// tabs width as max tab width or calcucate it
-		if (size.width / (float)numberOfTabs < maxTabWidth) {
+	if (![self centered]){
+		// segment width not fill the view width
+		if (segmentedWidth < size.width) {
 			
-			for (int i = 0; i < numberOfTabs; i++) {
-				[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
+			// tabs width as max tab width or calcucate it
+			if (size.width / (float)numberOfTabs < maxTabWidth) {
+				
+				for (int i = 0; i < numberOfTabs; i++) {
+					[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
+				}
+				
+				segmentedWidth = maxTabWidth * numberOfTabs;
+			} else {
+				maxTabWidth = roundf(size.width/(float)numberOfTabs + extraSpace * 2);
+				
+				for (int i = 0; i < numberOfTabs; i++) {
+					[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
+				}
+				
+				segmentedWidth = size.width;
 			}
-			
-			segmentedWidth = maxTabWidth * numberOfTabs;
-		} else {
-			maxTabWidth = roundf(size.width/(float)numberOfTabs + extraSpace * 2);
-			
-			for (int i = 0; i < numberOfTabs; i++) {
-				[segmentController setWidth:maxTabWidth forSegmentAtIndex:i];
-			}
-			
-			segmentedWidth = size.width;
 		}
 	}
-	
+//	CGRect segmentRect = segmentController.frame;
+//	segmentRect.size.width = segmentedWidth;
 	CGRect segmentRect = segmentController.frame;
 	segmentRect.size.width = segmentedWidth;
+//	if ([self centered]){
+//		UIView* tabView = tabs[segmentController.selectedSegmentIndex];
+//		segmentRect.origin.x = self.view.frame.size.width / 2 - tabView.frame.size.width / 2;
+//		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + tabView.frame.size.width / 2), [self tabHeight].intValue)];
+//	}
 	segmentController.frame = segmentRect;
+
 	
 	if ([self centered]){
-		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + maxTabWidth / 2), [self tabHeight].intValue)];
+		UIView* tabView = tabs[0];
+		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 - tabView.frame.size.width / 2), [self tabHeight].intValue)];
 	}else{
 		[tabScrollView setContentSize:CGSizeMake(segmentedWidth, [self tabHeight].intValue)];
 	}
@@ -747,7 +771,9 @@
 
 	CGFloat offsetX = 0;
 	if ([self centered]){
-		offsetX = indicatorLeftConst.constant;
+		UIView* firstView = tabs[0];
+		CGFloat diff = indicatorWidthConst.constant - firstView.frame.size.width;
+		offsetX = indicatorLeftConst.constant + diff / 2;
 		[self resizeTabs];
 	}else{
 		CGFloat indicatorMaxOriginX = scrollView.frame.size.width / 2 - indicator.frame.size.width / 2;
@@ -774,7 +800,10 @@
 
 -(BOOL)centered
 {
-	return NO;
+	return YES;
 }
 
+- (CGFloat) extraSpace {
+	return 15;
+}
 @end

@@ -116,10 +116,5 @@
  */
 - (void)addShadow;
 
-/**
- *  Set extra space on the left and the right of tab title
- *  @param extra CGFloat : left and right extra space
- */
-- (void)setExtraSpace:(CGFloat)extra;
 
 @end
