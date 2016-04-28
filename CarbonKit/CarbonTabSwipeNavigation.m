@@ -23,6 +23,24 @@
 
 #import "CarbonTabSwipeNavigation.h"
 
+
+@interface CarbonScrollView : UIScrollView
+
+@property(nonatomic,assign) BOOL enable;
+
+@end
+
+@implementation CarbonScrollView
+
+- (void) setContentOffset:(CGPoint)contentOffset {
+	if (!self.enable){
+		return;
+	}
+	[super setContentOffset:contentOffset];
+}
+
+@end
+
 @interface CarbonTabSwipeNavigation() <UIPageViewControllerDelegate, UIPageViewControllerDataSource, UIScrollViewDelegate> {
 	
 	BOOL isNotDragging;
@@ -40,7 +58,7 @@
 	
 	__weak UIViewController *rootViewController;
 	UIPageViewController *pageController;
-	UIScrollView *tabScrollView;
+	CarbonScrollView *tabScrollView;
 	UISegmentedControl *segmentController;
 	UIImageView *indicator;
 	
@@ -204,11 +222,13 @@
 		segmentRect.origin.x = self.view.frame.size.width / 2 - firstWitdh / 2;
 	}
 	segmentController.frame = segmentRect;
-
+	
 	
 	// create scrollview
-	tabScrollView = [[UIScrollView alloc] init];
+	tabScrollView = [[CarbonScrollView alloc] init];
+	tabScrollView.enable = YES;
 	tabScrollView.scrollsToTop = NO;
+	tabScrollView.tag = numberOfTabs;
 	[self.view addSubview:tabScrollView];
 	
 	// create indicator
@@ -420,6 +440,8 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
+	self.automaticallyAdjustsScrollViewInsets = NO;
+	
 	// init
 	tabs = [[NSMutableArray alloc] init];
 	viewControllers = [[NSMutableDictionary alloc] init];
@@ -438,7 +460,18 @@
 								[strongSelf callDelegate];
 							}];
 	
-//	tabScrollView.contentSize = contentSize;
+	//	tabScrollView.contentSize = contentSize;
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+	tabScrollView.enable = YES;
+	[super viewWillAppear:animated];
+	
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+	tabScrollView.enable = NO;
+	[super viewWillDisappear:animated];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -466,7 +499,7 @@
 	indicatorWidthConst.constant = tab.frame.size.width;
 	indicatorLeftConst.constant = tab.frame.origin.x;
 	
-
+	
 	// keep the page controller's width in sync
 	pageController.view.frame = CGRectMake(pageController.view.frame.origin.x, pageController.view.frame.origin.y, self.view.bounds.size.width, pageController.view.frame.size.height);
 	
@@ -488,7 +521,7 @@
 	}
 	CGRect selectedTabRect = ((UIView*)tabs[selectedIndex]).frame;
 	CGFloat indicatorMaxOriginX = tabScrollView.frame.size.width / 2 - selectedTabRect.size.width / 2;
-
+	
 	CGFloat offsetX = selectedTabRect.origin.x-indicatorMaxOriginX;
 	
 	if (offsetX < 0) offsetX = 0;
@@ -567,17 +600,17 @@
 			}
 		}
 	}
-//	CGRect segmentRect = segmentController.frame;
-//	segmentRect.size.width = segmentedWidth;
+	//	CGRect segmentRect = segmentController.frame;
+	//	segmentRect.size.width = segmentedWidth;
 	CGRect segmentRect = segmentController.frame;
 	segmentRect.size.width = segmentedWidth;
-//	if ([self centered]){
-//		UIView* tabView = tabs[segmentController.selectedSegmentIndex];
-//		segmentRect.origin.x = self.view.frame.size.width / 2 - tabView.frame.size.width / 2;
-//		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + tabView.frame.size.width / 2), [self tabHeight].intValue)];
-//	}
+	//	if ([self centered]){
+	//		UIView* tabView = tabs[segmentController.selectedSegmentIndex];
+	//		segmentRect.origin.x = self.view.frame.size.width / 2 - tabView.frame.size.width / 2;
+	//		[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + tabView.frame.size.width / 2), [self tabHeight].intValue)];
+	//	}
 	segmentController.frame = segmentRect;
-
+	
 	
 	if ([self centered]){
 		UIView* tabView = tabs[0];
@@ -585,7 +618,7 @@
 	}else{
 		[tabScrollView setContentSize:CGSizeMake(segmentedWidth, [self tabHeight].intValue)];
 	}
-//	[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + maxTabWidth / 2), [self tabHeight].doubleValue)];
+	//	[tabScrollView setContentSize:CGSizeMake(segmentedWidth + (self.view.frame.size.width / 2 + maxTabWidth / 2), [self tabHeight].doubleValue)];
 }
 
 - (UIImage *)imageWithInsets:(CGRect)insetRect image:(UIImage *)image {
@@ -768,7 +801,7 @@
 			
 		}
 	}
-
+	
 	CGFloat offsetX = 0;
 	if ([self centered]){
 		UIView* firstView = tabs[0];
@@ -807,3 +840,4 @@
 	return 15;
 }
 @end
+
