@@ -95,6 +95,21 @@
 									tabNames:(NSArray *)names
 								   tintColor:(UIColor *)tintColor
 									delegate:(id)delegate {
+	return [self createWithRootViewController:viewController
+									 tabNames:names
+									tintColor:tintColor
+									 delegate:delegate
+								   normalFont:[UIFont boldSystemFontOfSize:14]
+								 selectedFont:[UIFont boldSystemFontOfSize:14]];
+}
+
+
+- (instancetype)createWithRootViewController:(UIViewController *)viewController
+									tabNames:(NSArray *)names
+								   tintColor:(UIColor *)tintColor
+									delegate:(id)delegate
+								  normalFont:(UIFont *) normalFont
+								selectedFont:(UIFont *) selectedFont {
 	
 	// init
 	self.delegate = delegate;
@@ -149,10 +164,10 @@
 	UIColor *normalTextColor = [self.view.tintColor colorWithAlphaComponent:0.8];
 	
 	[segmentController setTitleTextAttributes:@{NSForegroundColorAttributeName:normalTextColor,
-												NSFontAttributeName:[UIFont boldSystemFontOfSize:14]}
+												NSFontAttributeName:normalFont}
 									 forState:UIControlStateNormal];
 	[segmentController setTitleTextAttributes:@{NSForegroundColorAttributeName:self.view.tintColor,
-												NSFontAttributeName:[UIFont boldSystemFontOfSize:14]}
+												NSFontAttributeName:selectedFont}
 									 forState:UIControlStateSelected];
 	
 	// segment controller action

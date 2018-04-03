@@ -73,6 +73,7 @@
  */
 - (instancetype)createWithRootViewController:(UIViewController *)viewController tabNames:(NSArray *)names tintColor:(UIColor *)tintColor delegate:(id)delegate;
 
+- (instancetype)createWithRootViewController:(UIViewController *)viewController tabNames:(NSArray *)names tintColor:(UIColor *)tintColor delegate:(id)delegate normalFont:(UIFont *) normalFont selectedFont:(UIFont *) selectedFont;
 /**
  *  Navigation tranlucent
  *  @param translucent Navigation Bar translucent
@@ -115,6 +116,12 @@
  * Add 1 pixel shadow
  */
 - (void)addShadow;
+
+-(NSNumber*)tabHeight;
+
+-(BOOL)centered;
+
+- (CGFloat) extraSpace;
 
 
 @end
