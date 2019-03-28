@@ -15,8 +15,8 @@ Pod::Spec.new do |s|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  s.name         = "CarbonKit"
-  s.version      = "1.1.3"
+  s.name         = "TTCarbonKit"
+  s.version      = "1.1.4"
   s.summary      = "CarbonKit is an iOS OpenSource libraries collection"
 
   s.description  = <<-DESC
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
 		  - CarbonTabSwipeNavigation : navigate with tabs using swipe
                    DESC
 
-  s.homepage     = "https://github.com/ermalkaleci/CarbonKit"
+  s.homepage     = "https://github.com/marceCuevas16/CarbonKit"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
 
 
